@@ -1,29 +1,29 @@
 import type { Dispatch, SetStateAction } from 'react'
 
-import { readLocalStorageArea } from '../browserStorage/browserStorageHelpers'
+import { readSessionStorageArea } from '../browserStorage/browserStorageHelpers'
 import {
   useBrowserStorage,
   type BrowserStorageOptions,
 } from '../browserStorage/useBrowserStorage'
 
-export interface UseLocalStorageSerializer<T> {
+export interface UseSessionStorageSerializer<T> {
   read: (raw: string) => T
   write: (value: T) => string
 }
 
-export type UseLocalStorageMergeDefaults<T> =
+export type UseSessionStorageMergeDefaults<T> =
   boolean | ((storedValue: T, defaultValue: T) => T)
 
-export interface UseLocalStorageOptions<T> {
-  serializer?: UseLocalStorageSerializer<T>
-  mergeDefaults?: UseLocalStorageMergeDefaults<T>
+export interface UseSessionStorageOptions<T> {
+  serializer?: UseSessionStorageSerializer<T>
+  mergeDefaults?: UseSessionStorageMergeDefaults<T>
   writeDefaults?: boolean
   listenToStorageChanges?: boolean
   window?: Window | null
   onError?: (error: Error) => void
 }
 
-export interface UseLocalStorageReturn<T> {
+export interface UseSessionStorageReturn<T> {
   value: T
   setValue: Dispatch<SetStateAction<T>>
   remove: () => void
@@ -34,21 +34,24 @@ export interface UseLocalStorageReturn<T> {
 }
 
 /**
- * Persist a value in `localStorage` with SSR-safe hydration, automatic
- * serialization, same-document registry sync, and optional cross-tab events.
+ * Persist a value in `sessionStorage` with SSR-safe hydration, automatic
+ * serialization, and same-document registry sync.
+ *
+ * Session storage survives reloads in the same browsing context and is cleared
+ * when that top-level session ends. It is not a durable cross-tab store.
  *
  * Browser storage is accessed only in effects. The first client render matches
  * the server (`value: defaultValue`, `isReady: false`, `isSupported: false`).
  */
-export function useLocalStorage<T>(
+export function useSessionStorage<T>(
   key: string,
   defaultValue: T,
-  options?: UseLocalStorageOptions<T>,
-): UseLocalStorageReturn<T> {
+  options?: UseSessionStorageOptions<T>,
+): UseSessionStorageReturn<T> {
   return useBrowserStorage(
     key,
     defaultValue,
-    readLocalStorageArea,
+    readSessionStorageArea,
     options as BrowserStorageOptions<T> | undefined,
   )
 }
